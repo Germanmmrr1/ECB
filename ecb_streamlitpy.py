@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import time
 
 
 
@@ -104,3 +105,24 @@ else:
         <span style='color:#1a5f0a; font-size:1.1em;'>¡Felicidades! Todavía puedes comprar al menos una casa completa. 🏡</span>
     </div>
     """, unsafe_allow_html=True)
+years = np.arange(1999, 2025+1)
+default_idx = 0
+if 'auto_year' not in st.session_state:
+    st.session_state['auto_year'] = years[default_idx]
+
+# Play button to animate slider
+play_col1, play_col2, play_col3 = st.columns([3,2,3])
+with play_col2:
+    if st.button("▶️ Animar años"):
+        for y in years:
+            st.session_state['auto_year'] = y
+            time.sleep(0.35)  # control speed
+            st.experimental_rerun()  # This re-runs the app with the new state
+
+# The animated slider (shows current year and lets user also move it manually)
+selected_year = st.slider(
+    "Avanza en el tiempo:",
+    int(years[0]), int(years[-1]),
+    int(st.session_state['auto_year']),
+    key="year_slider"
+)
