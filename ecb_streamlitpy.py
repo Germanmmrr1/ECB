@@ -38,11 +38,10 @@ st.markdown("""
 
 col1, col2, col3 = st.columns([3,2,3])
 with col2:
-if st.button("🎲 Empezar a jugar"):
+    if st.button("🎲 Empezar a jugar"):
     st.session_state['start_game'] = True
 
 # When ready, continue to the next step in your app:
-
 if st.session_state.get('start_game'):
     st.markdown("""
         <h3 style='text-align:center; margin-top:12px;'>Tu partida comienza en 1999...</h3>
