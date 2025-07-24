@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import time
 
 # --- Welcome Screen ---
@@ -27,14 +28,13 @@ st.markdown("""
     }
     </style>
     <div class="monopoly-title">
-        🏦💶 ECB MONOPOLY: ¿QUIÉN QUIERE DINERO INFINITO? 💸🏠
+        🏦💶 ECB MONOPOLY: EL ORO NUNCA PIERDE<br>💸🪙
     </div>
     <div class="monopoly-intro">
-        ¡Bienvenido a la demo del Monopoly del Banco Central Europeo!<br>
-        <br>
+        Bienvenido a la demo educativa del Monopoly del BCE.<br><br>
         <b>Empiezas en 1999 solo con <span style='color:#228B22;'>100.000 €</span> en efectivo.</b><br><br>
-        <b>Tu objetivo:</b> Descubrir de forma divertida cómo el BCE crea dinero, cómo eso afecta los precios de casas, hoteles y todo lo que tienes, y qué pasa cuando el dinero deja de valer lo mismo.<br><br>
-        <span style="color:#2266c6;"><b>¿Listo para ver cómo tu dinero se convierte en billetes del Monopoly?</b></span>
+        <b>¿Cuántas onzas de oro podrías comprar con ese dinero cada año?</b> Descubre cómo el euro pierde poder adquisitivo frente al oro.<br><br>
+        <span style="color:#2266c6;"><b>¡Pulsa para empezar la animación!</b></span>
     </div>
 """, unsafe_allow_html=True)
 
@@ -46,11 +46,7 @@ with col2:
         st.session_state['animation_finished'] = False
 
 if st.session_state.get('start_game'):
-
-    # --- Datos de la animación ---
-    years = np.arange(1999, 2026)
-
-    # Precios reales del oro, interpolados
+    # --- Datos oro reales e interpolación ---
     gold_price_data = {
         1998: 264.3,
         1999: 261.4,
@@ -81,12 +77,11 @@ if st.session_state.get('start_game'):
         2024: 2205.5,
         2025: 2880.0
     }
+
+    years = np.arange(1999, 2026)
     gold_series = pd.Series(gold_price_data)
     gold_series = gold_series.reindex(years).interpolate().bfill().ffill()
     gold_prices = gold_series.values
-
-    # (Puedes cambiar estos precios de la casa o poner los reales)
-    house_prices = 100_000 + (years - 1999) * 10_000 + np.where(years > 2008, (years-2008)*5_000, 0)
     cash = 100_000
 
     if 'animation_year_idx' not in st.session_state:
@@ -94,51 +89,59 @@ if st.session_state.get('start_game'):
     if 'animation_finished' not in st.session_state:
         st.session_state['animation_finished'] = False
 
-    # Animación automática
-    if not st.session_state['animation_finished']:
-        idx = st.session_state['animation_year_idx']
-        current_year = int(years[idx])
-        current_house_price = house_prices[idx]
-        current_gold_price = gold_prices[idx]
-        houses_you_can_buy = cash / current_house_price
-        gold_you_can_buy = cash / current_gold_price
+    # --- Animación automática ---
+    idx = st.session_state['animation_year_idx']
+    current_year = int(years[idx])
+    current_gold_price = gold_prices[idx]
+    gold_you_can_buy = cash / current_gold_price
 
-        st.markdown(f"""
-        <h3 style='text-align:center; margin-top:14px;'>Año: {current_year}</h3>
-        <div style='text-align:center; font-size:1.25em; margin-bottom:18px; color:#1a3700;'>
-        Con <b>100.000 €</b> en <b>{current_year}</b> puedes comprar:
+    st.markdown(f"""
+    <h3 style='text-align:center; margin-top:14px;'>Año: {current_year}</h3>
+    <div style='text-align:center; font-size:1.25em; margin-bottom:18px; color:#1a3700;'>
+    Con <b>100.000 €</b> en <b>{current_year}</b> puedes comprar:
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
+    st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{current_gold_price:,.1f} €</b></div>", unsafe_allow_html=True)
+
+    # --- Gráfica dinámica (decaimiento del euro frente al oro) ---
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("#### Evolución del poder de compra del euro frente al oro")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ozs_hist = cash / gold_prices[:idx+1]
+    ax.plot(years[:idx+1], ozs_hist, marker="o", linewidth=2)
+    ax.set_xlabel("Año")
+    ax.set_ylabel("Onzas de oro que puedes comprar con 100.000 €")
+    ax.set_title("")
+    ax.grid(True, alpha=0.3)
+    # Marca el punto actual
+    ax.scatter([current_year], [gold_you_can_buy], color='orange', s=120, label="Año actual")
+    ax.legend(loc="upper right")
+    st.pyplot(fig, use_container_width=True)
+
+    # Feedback visual
+    if gold_you_can_buy < 50:
+        st.markdown("""
+        <div style='text-align:center; margin-top:18px;'>
+            <span style='color:#e63946; font-size:1.4em;'>¡Alerta! Tu dinero ya compra muy poco oro... 🪙💸</span>
+        </div>
+        """, unsafe_allow_html=True)
+    elif gold_you_can_buy < 200:
+        st.markdown("""
+        <div style='text-align:center; margin-top:16px;'>
+            <span style='color:#f4a300; font-size:1.2em;'>El euro cada vez compra menos oro. 😬</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style='text-align:center; margin-top:16px;'>
+            <span style='color:#1a5f0a; font-size:1.1em;'>En este año, aún puedes comprar mucho oro. 🪙</span>
         </div>
         """, unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("🏠 % de una casa", f"{houses_you_can_buy:.2f}")
-            st.markdown(f"<div style='text-align:center; color:#222;'>Precio casa: <b>{int(current_house_price):,} €</b></div>", unsafe_allow_html=True)
-        with col2:
-            st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
-            st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{current_gold_price:,.1f} €</b></div>", unsafe_allow_html=True)
-
-        # Feedback visual
-        if houses_you_can_buy < 0.5:
-            st.markdown("""
-            <div style='text-align:center; margin-top:18px;'>
-                <span style='color:#e63946; font-size:1.4em;'>¡Cuidado! Tu dinero se ha "monopolizado":<br>Ya no puedes ni comprar media casa... 🏠💸</span>
-            </div>
-            """, unsafe_allow_html=True)
-        elif houses_you_can_buy < 1:
-            st.markdown("""
-            <div style='text-align:center; margin-top:16px;'>
-                <span style='color:#f4a300; font-size:1.2em;'>Con el paso del tiempo, cada vez compras menos casa con el mismo dinero. 😬</span>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style='text-align:center; margin-top:16px;'>
-                <span style='color:#1a5f0a; font-size:1.1em;'>¡Felicidades! Todavía puedes comprar al menos una casa completa. 🏡</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # Avanza al siguiente año
+    # --- Avanza al siguiente año ---
+    if not st.session_state['animation_finished']:
         if idx < len(years) - 1:
             time.sleep(0.75)
             st.session_state['animation_year_idx'] += 1
@@ -146,17 +149,17 @@ if st.session_state.get('start_game'):
         else:
             st.session_state['animation_finished'] = True
 
-    # Conclusiones al final
+    # --- Conclusión final ---
     if st.session_state['animation_finished']:
         st.markdown("<hr style='margin:34px 0;'>", unsafe_allow_html=True)
         st.markdown("""
         <div style='background-color:#f0f8ff; border-left: 7px solid #2b5876; padding: 18px 24px; border-radius:8px; color:#222; margin-top:20px;'>
-        <h2 style='color:#2b5876;'>🔔 Conclusiones</h2>
+        <h2 style='color:#2b5876;'>🔔 Conclusión</h2>
         <ul style='font-size:1.08em; color:#222;'>
-          <li><b>El dinero en efectivo pierde poder adquisitivo con el tiempo.</b></li>
-          <li><b>El aumento de los balances de los bancos centrales y la inflación de activos</b> hacen que cada vez puedas comprar menos cosas reales.</li>
-          <li><b>Diversificar en activos reales</b> es clave para proteger tu riqueza a largo plazo.</li>
+          <li><b>El euro pierde poder adquisitivo frente al oro de forma muy notable en el tiempo.</b></li>
+          <li><b>El oro mantiene (o aumenta) su valor real a lo largo de los ciclos económicos y políticos.</b></li>
+          <li><b>La animación muestra de manera visual la depreciación monetaria causada por las políticas del BCE y la inflación acumulada.</b></li>
         </ul>
-        <p style='margin-top:10px; font-size:1.02em; color:#384957;'><b>¿Quieres volver a intentarlo?</b> Recarga la página para empezar de nuevo.</p>
+        <p style='margin-top:10px; font-size:1.02em; color:#384957;'><b>¿Quieres volver a ver la animación?</b> Recarga la página.</p>
         </div>
         """, unsafe_allow_html=True)
