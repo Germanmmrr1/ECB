@@ -107,22 +107,24 @@ else:
     """, unsafe_allow_html=True)
 years = np.arange(1999, 2025+1)
 default_idx = 0
+# Initialize the session state value for the year
 if 'auto_year' not in st.session_state:
-    st.session_state['auto_year'] = years[default_idx]
+    st.session_state['auto_year'] = int(years[0])
 
-# Play button to animate slider
-play_col1, play_col2, play_col3 = st.columns([3,2,3])
-with play_col2:
+# Button to animate the years
+col1, col2, col3 = st.columns([3,2,3])
+with col2:
     if st.button("▶️ Animar años"):
         for y in years:
-            st.session_state['auto_year'] = y
-            time.sleep(0.35)  # control speed
-            st.experimental_rerun()  # This re-runs the app with the new state
+            st.session_state['auto_year'] = int(y)
+            time.sleep(0.25)
+            st.experimental_rerun()
+        st.stop()  # After animation, stop further execution
 
-# The animated slider (shows current year and lets user also move it manually)
+# The slider: value comes from st.session_state['auto_year']
 selected_year = st.slider(
     "Avanza en el tiempo:",
     int(years[0]), int(years[-1]),
-    int(st.session_state['auto_year']),
-    key="year_slider"
+    value=int(st.session_state['auto_year']),
+    key="auto_year"
 )
