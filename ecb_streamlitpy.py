@@ -4,6 +4,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import time
 
+st.set_option('deprecation.showPyplotGlobalUse', False)
+
 # --- Welcome Screen ---
 st.markdown("""
     <style>
@@ -75,7 +77,7 @@ st.markdown("""
     <div class="monopoly-intro">
         Bienvenido a la demo educativa del Monopoly del BCE.<br><br>
         <b>Empiezas en 1999 solo con <span style='color:#228B22;'>100.000 €</span> en efectivo.</b><br><br>
-        <b>¿Cuántas onzas de oro podrías comprar con ese dinero cada año?</b> Descubre cómo el euro pierde poder adquisitivo frente al oro.<br><br>
+        <b>¿Cuántas onzas de oro podrías comprar con ese dinero cada año?</b> Descubre cómo el euro pierde poder adquisitivo frente al oro y compáralo con el balance real del BCE.<br><br>
         <span style="color:#2266c6;"><b>¡Pulsa para empezar la animación!</b></span>
     </div>
 """, unsafe_allow_html=True)
@@ -88,7 +90,7 @@ with col2:
         st.session_state['animation_finished'] = False
 
 if st.session_state.get('start_game'):
-    # --- Datos oro reales e interpolación ---
+    # --- Oro real e interpolación ---
     gold_price_data = {
         1998: 264.3,
         1999: 261.4,
@@ -120,11 +122,19 @@ if st.session_state.get('start_game'):
         2025: 2880.0
     }
 
-    years = np.arange(1999, 2026)
+    years = list(range(1999, 2026))
     gold_series = pd.Series(gold_price_data)
     gold_series = gold_series.reindex(years).interpolate().bfill().ffill()
     gold_prices = gold_series.values
     cash = 100_000
+
+    # --- BALANCE BCE REAL EN MILLONES DE EUROS (JULIO DE CADA AÑO) ---
+    balance_bce_millones = [
+        721_569, 791_179, 842_370, 765_635, 795_274, 868_840, 979_453, 1_107_838, 1_185_364,
+        1_427_348, 1_875_712, 1_986_989, 1_957_194, 3_099_646, 2_403_333, 2_062_474, 2_518_972,
+        3_249_177, 4_229_286, 4_599_857, 4_684_376, 6_322_604, 7_950_657, 8_765_687, 7_205_494,
+        6_494_463, 6_118_884
+    ]  # en millones de euros
 
     if 'animation_year_idx' not in st.session_state:
         st.session_state['animation_year_idx'] = 0
@@ -132,7 +142,7 @@ if st.session_state.get('start_game'):
         st.session_state['animation_finished'] = False
 
     idx = st.session_state['animation_year_idx']
-    current_year = int(years[idx])
+    current_year = years[idx]
     current_gold_price = gold_prices[idx]
     gold_you_can_buy = cash / current_gold_price
 
@@ -157,18 +167,28 @@ if st.session_state.get('start_game'):
     </div>
     """, unsafe_allow_html=True)
 
-    # --- Gráfica visual y clara ---
+    # --- Gráfica doble (oro y balance BCE) ---
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<div style="text-align:center;font-size:1.25em;font-weight:700;margin-bottom:14px;color:#252d42;">Evolución del poder de compra del euro frente al oro</div>', unsafe_allow_html=True)
-    fig, ax = plt.subplots(figsize=(8, 4))
+    st.markdown('<div style="text-align:center;font-size:1.25em;font-weight:700;margin-bottom:14px;color:#252d42;">Evolución del poder de compra del euro frente al oro y tamaño del balance real del BCE</div>', unsafe_allow_html=True)
+    fig, ax1 = plt.subplots(figsize=(8, 4))
     ozs_hist = cash / gold_prices[:idx+1]
-    ax.plot(years[:idx+1], ozs_hist, marker="o", linewidth=2, color="#2979FF")
-    ax.set_xlabel("Año", fontsize=13)
-    ax.set_ylabel("Onzas de oro que puedes comprar con 100.000 €", fontsize=13)
-    ax.grid(True, alpha=0.28)
-    # Punto actual: círculo grande dorado
-    ax.scatter([current_year], [gold_you_can_buy], color='#FFD700', edgecolor="#A48413", s=190, label="Año actual", zorder=10)
-    ax.legend(loc="upper right")
+    ax1.plot(years[:idx+1], ozs_hist, marker="o", linewidth=2, color="#2979FF", label="Onzas de oro")
+    ax1.set_xlabel("Año", fontsize=13)
+    ax1.set_ylabel("Onzas de oro (100.000 €)", fontsize=13, color="#2979FF")
+    ax1.tick_params(axis='y', labelcolor="#2979FF")
+    ax1.grid(True, alpha=0.25)
+    # Punto actual oro
+    ax1.scatter([current_year], [gold_you_can_buy], color='#FFD700', edgecolor="#A48413", s=190, label="Año actual", zorder=10)
+
+    # Segundo eje: balance BCE (en billones de €)
+    ax2 = ax1.twinx()
+    ax2.plot(years[:idx+1], np.array(balance_bce_millones[:idx+1])/1e6, '--', color="#D18900", linewidth=2.6, label="Balance BCE")
+    ax2.set_ylabel("Balance BCE (billones €)", fontsize=13, color="#D18900")
+    ax2.tick_params(axis='y', labelcolor="#D18900")
+    # Leyendas
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines1 + lines2, labels1 + labels2, loc="upper right")
     st.pyplot(fig, use_container_width=True)
 
     # Feedback visual
@@ -208,7 +228,7 @@ if st.session_state.get('start_game'):
         <h2 style='color:#2b5876;'>🔔 Conclusión</h2>
         <ul style='font-size:1.08em; color:#222;'>
           <li><b>El euro pierde poder adquisitivo frente al oro de forma muy notable en el tiempo.</b></li>
-          <li><b>El oro mantiene (o aumenta) su valor real a lo largo de los ciclos económicos y políticos.</b></li>
+          <li><b>El tamaño del balance del BCE crece de forma casi constante y está muy correlacionado con la caída del poder adquisitivo de la moneda.</b></li>
           <li><b>La animación muestra de manera visual la depreciación monetaria causada por las políticas del BCE y la inflación acumulada.</b></li>
         </ul>
         <p style='margin-top:10px; font-size:1.02em; color:#384957;'><b>¿Quieres volver a ver la animación?</b> Recarga la página.</p>
