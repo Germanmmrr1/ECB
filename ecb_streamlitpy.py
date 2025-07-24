@@ -39,7 +39,7 @@ st.markdown("""
 col1, col2, col3 = st.columns([3,2,3])
 with col2:
     if st.button("🎲 Empezar a jugar"):
-    st.session_state['start_game'] = True
+        st.session_state['start_game'] = True
 
 # When ready, continue to the next step in your app:
 if st.session_state.get('start_game'):
