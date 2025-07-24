@@ -103,9 +103,9 @@ if st.session_state.get('start_game'):
 
         # Advance to the next year automatically after a short pause
         if idx < len(years) - 1:
-            time.sleep(0.75)  # Animation speed (seconds)
+            time.sleep(0.75)
             st.session_state['animation_year_idx'] += 1
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.session_state['animation_finished'] = True
 
