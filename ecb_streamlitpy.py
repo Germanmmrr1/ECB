@@ -7,6 +7,18 @@ import numpy as np
 # Load your CSV
 df = pd.read_csv("pivoted_ecb_items_clean.csv", index_col=0)
 
+st.markdown("""
+    <style>
+    /* Hide Streamlit's top right menu, 'Share' button, and footer */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .st-emotion-cache-1avcm0n.ezrtsby0 {display: none;} /* GitHub icon menu */
+    .stActionButton {display:none;}
+    </style>
+""", unsafe_allow_html=True)
+
+
 # Attempt to parse columns to datetime robustly
 def robust_date_parse(cols):
     # First, try standard YYYY-MM-DD
@@ -93,7 +105,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.image("bce_animacion.gif", use_column_width=True)
+st.image("bce_animacion.gif", use_container_width=True)
 
 # Custom CSS for centered chart titles
 st.markdown("""
