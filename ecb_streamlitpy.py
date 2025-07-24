@@ -135,11 +135,14 @@ if "Assets" in df.index:
     ax.grid(True)
     plt.tight_layout()
     st.pyplot(fig)
-    st.caption(
-        "Este gráfico muestra la evolución del total de activos en el balance del BCE desde 1999. "
-        "El total de activos representa el tamaño del balance del banco central: cuanto más alto, más dinero y liquidez ha creado el BCE para apoyar la economía de la zona euro. "
-        "Un fuerte aumento suele estar ligado a políticas de estímulo como la compra masiva de activos (expansión cuantitativa) o a respuestas ante crisis económicas."
-    )
+    st.markdown("""
+<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em'>
+<b>🔎 Explicación:</b> Este gráfico muestra la evolución del total de activos en el balance del BCE desde 1999. 
+El total de activos representa el tamaño del balance del banco central: cuanto más alto, más dinero y liquidez ha creado el BCE para apoyar la economía de la zona euro. 
+Un fuerte aumento suele estar ligado a políticas de estímulo como la compra masiva de activos (expansión cuantitativa) o a respuestas ante crisis económicas.
+</div>
+""", unsafe_allow_html=True)
+
 else:
     st.warning("No se encuentra la línea 'Assets' en los datos.")
 
@@ -162,7 +165,11 @@ for item in items_to_plot:
         ax.grid(True)
         plt.tight_layout()
         st.pyplot(fig)
-        st.caption(desc)
+        st.markdown(f"""
+<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em'>
+<b>🔎 Explicación:</b> {desc}
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <hr style='margin-top:32px;margin-bottom:32px;'>
