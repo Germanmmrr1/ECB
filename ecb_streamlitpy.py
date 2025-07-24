@@ -136,7 +136,7 @@ if "Assets" in df.index:
     plt.tight_layout()
     st.pyplot(fig)
     st.markdown("""
-<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em'>
+<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em; color:#222;'>
 <b>🔎 Explicación:</b> Este gráfico muestra la evolución del total de activos en el balance del BCE desde 1999. 
 El total de activos representa el tamaño del balance del banco central: cuanto más alto, más dinero y liquidez ha creado el BCE para apoyar la economía de la zona euro. 
 Un fuerte aumento suele estar ligado a políticas de estímulo como la compra masiva de activos (expansión cuantitativa) o a respuestas ante crisis económicas.
@@ -166,22 +166,24 @@ for item in items_to_plot:
         plt.tight_layout()
         st.pyplot(fig)
         st.markdown(f"""
-<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em'>
+<div style='background-color:#f6f6f6; border-left: 5px solid #003580; padding: 16px 18px; margin-top:12px; margin-bottom:28px; border-radius:6px; font-size:1.04em; color:#222;'>
 <b>🔎 Explicación:</b> {desc}
 </div>
 """, unsafe_allow_html=True)
 
+
 st.markdown("""
 <hr style='margin-top:32px;margin-bottom:32px;'>
 
-<div style='background-color:#f0f8ff; border-left: 7px solid #2b5876; padding: 18px 24px; border-radius:8px;'>
+<div style='background-color:#f0f8ff; border-left: 7px solid #2b5876; padding: 18px 24px; border-radius:8px; color:#222;'>
 <h2 style='color:#2b5876;'>🔔 Conclusiones principales</h2>
-<ul style='font-size:1.08em;'>
-  <li><b>El tamaño del balance del BCE</b> ha crecido de manera significativa tras las crisis y los programas de expansión cuantitativa, mostrando la magnitud de la intervención monetaria.</li>
-  <li><b>Las reservas bancarias</b> y la facilidad de depósito han alcanzado máximos históricos, reflejando el exceso de liquidez en el sistema financiero.</li>
-  <li><b>Las compras de bonos</b> han sido el principal motor de aumento de los activos del BCE desde 2015, con impacto directo en los tipos de interés y la inflación.</li>
-  <li><b>Los billetes en circulación</b> crecen de forma constante, lo que indica la confianza y el uso del efectivo en la economía europea.</li>
+<ul style='font-size:1.08em; color:#222;'>
+  <li><b>El balance del BCE</b> se ha expandido de forma notable en momentos de crisis y políticas de estímulo, reflejando la fuerte intervención monetaria.</li>
+  <li><b>Las reservas de los bancos</b> y la facilidad de depósito han alcanzado cifras récord, indicando abundante liquidez en el sistema financiero europeo.</li>
+  <li><b>Las compras de bonos</b> han sido determinantes en el aumento de los activos del BCE desde 2015, afectando tipos de interés e inflación.</li>
+  <li><b>Los billetes en circulación</b> mantienen un crecimiento estable, lo que demuestra la importancia del efectivo en la economía europea.</li>
 </ul>
-<p style='margin-top:10px; font-size:1.02em; color:#384957;'><b>En resumen:</b> Las políticas del BCE han transformado el sistema financiero europeo en las últimas décadas. Analizar el balance del BCE es clave para entender la evolución de la economía y anticipar tendencias de inflación.</p>
+<p style='margin-top:10px; font-size:1.02em; color:#222;'><b>En resumen:</b> Analizar la evolución del balance del BCE ayuda a comprender las tendencias económicas e inflacionarias en Europa y el impacto de la política monetaria en la vida cotidiana.</p>
 </div>
 """, unsafe_allow_html=True)
+
