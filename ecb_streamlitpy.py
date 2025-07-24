@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import time
 
 # --- Welcome Screen ---
@@ -46,10 +47,46 @@ with col2:
 
 if st.session_state.get('start_game'):
 
-    # Simulated asset prices and years
-    years = np.arange(1999, 2025+1)
+    # --- Datos de la animación ---
+    years = np.arange(1999, 2026)
+
+    # Precios reales del oro, interpolados
+    gold_price_data = {
+        1998: 264.3,
+        1999: 261.4,
+        2000: 302.8,
+        2001: 302.8,
+        2002: 328.0,
+        2003: 321.2,
+        2004: 329.1,
+        2005: 358.3,
+        2006: 480.5,
+        2007: 506.8,
+        2008: 593.2,
+        2009: 696.9,
+        2010: 925.1,
+        2011: 1129.7,
+        2012: 1298.4,
+        2013: 1063.6,
+        2014: 952.9,
+        2015: 1045.2,
+        2016: 1129.1,
+        2017: 1114.2,
+        2018: 1073.6,
+        2019: 1244.9,
+        2020: 1549.0,
+        2021: 1520.7,
+        2022: 1710.4,
+        2023: 1795.0,
+        2024: 2205.5,
+        2025: 2880.0
+    }
+    gold_series = pd.Series(gold_price_data)
+    gold_series = gold_series.reindex(years).interpolate().bfill().ffill()
+    gold_prices = gold_series.values
+
+    # (Puedes cambiar estos precios de la casa o poner los reales)
     house_prices = 100_000 + (years - 1999) * 10_000 + np.where(years > 2008, (years-2008)*5_000, 0)
-    gold_prices = 250 + (years - 1999) * 20 + np.where(years > 2007, (years-2007)*90, 0)
     cash = 100_000
 
     if 'animation_year_idx' not in st.session_state:
@@ -57,7 +94,7 @@ if st.session_state.get('start_game'):
     if 'animation_finished' not in st.session_state:
         st.session_state['animation_finished'] = False
 
-    # Show animation one year at a time
+    # Animación automática
     if not st.session_state['animation_finished']:
         idx = st.session_state['animation_year_idx']
         current_year = int(years[idx])
@@ -79,9 +116,9 @@ if st.session_state.get('start_game'):
             st.markdown(f"<div style='text-align:center; color:#222;'>Precio casa: <b>{int(current_house_price):,} €</b></div>", unsafe_allow_html=True)
         with col2:
             st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
-            st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{int(current_gold_price):,} €</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{current_gold_price:,.1f} €</b></div>", unsafe_allow_html=True)
 
-        # Visual feedback
+        # Feedback visual
         if houses_you_can_buy < 0.5:
             st.markdown("""
             <div style='text-align:center; margin-top:18px;'>
@@ -101,7 +138,7 @@ if st.session_state.get('start_game'):
             </div>
             """, unsafe_allow_html=True)
 
-        # Advance to the next year automatically after a short pause
+        # Avanza al siguiente año
         if idx < len(years) - 1:
             time.sleep(0.75)
             st.session_state['animation_year_idx'] += 1
@@ -109,7 +146,7 @@ if st.session_state.get('start_game'):
         else:
             st.session_state['animation_finished'] = True
 
-    # Show conclusions after the last year
+    # Conclusiones al final
     if st.session_state['animation_finished']:
         st.markdown("<hr style='margin:34px 0;'>", unsafe_allow_html=True)
         st.markdown("""
