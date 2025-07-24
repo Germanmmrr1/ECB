@@ -71,15 +71,14 @@ if st.session_state.get('start_game'):
 
     # Animation logic: advance year if animating
     if st.session_state['is_animating']:
-        current_year = st.session_state['auto_year']
-        if current_year < int(years[-1]):
-            next_year = current_year + 1
-            time.sleep(0.23)
-            st.session_state['auto_year'] = next_year
-            st.experimental_rerun()
-        else:
-            st.session_state['is_animating'] = False
-            # No st.experimental_rerun() here! End the animation cleanly.
+    current_year = st.session_state['auto_year']
+    if current_year < int(years[-1]):
+        next_year = current_year + 1
+        time.sleep(0.23)
+        st.session_state['auto_year'] = next_year
+        st.experimental_rerun()
+    else:
+        st.session_state['is_animating'] = False
 
 
     # The slider: value from session_state (also lets user drag)
