@@ -26,6 +26,48 @@ st.markdown("""
         font-size: 1.2em;
         max-width: 680px;
     }
+    .gold-metric-block {
+        text-align: center;
+        margin: 35px 0 15px 0;
+    }
+    .gold-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.09em;
+        color: #D4AF37;
+        margin-bottom: 5px;
+        gap: 8px;
+    }
+    .gold-coin {
+        display: inline-block;
+        width: 29px; height: 29px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 35%, #ffe57f 0%, #FFD700 65%, #E6BE8A 100%);
+        border: 2.4px solid #bfa200;
+        box-shadow: 0 1px 4px 0 #E6BE8A88, 0 0 0 1px #ffe57f inset;
+        margin-right: 3px;
+        vertical-align: middle;
+    }
+    .gold-value {
+        font-size: 3.3em;
+        font-weight: 700;
+        color: #333;
+        letter-spacing: 0.02em;
+        margin-bottom: 3px;
+    }
+    .gold-caption {
+        color: #333;
+        font-size: 1.1em;
+        margin-top: 3px;
+    }
+    .main-text {
+        text-align: center;
+        font-size: 1.45em;
+        color: #1a3700;
+        margin: 24px 0 6px 0;
+        font-weight: 600;
+    }
     </style>
     <div class="monopoly-title">
         🏦💶 ECB MONOPOLY: EL ORO NUNCA PIERDE<br>💸🪙
@@ -89,34 +131,43 @@ if st.session_state.get('start_game'):
     if 'animation_finished' not in st.session_state:
         st.session_state['animation_finished'] = False
 
-    # --- Animación automática ---
     idx = st.session_state['animation_year_idx']
     current_year = int(years[idx])
     current_gold_price = gold_prices[idx]
     gold_you_can_buy = cash / current_gold_price
 
     st.markdown(f"""
-    <h3 style='text-align:center; margin-top:14px;'>Año: {current_year}</h3>
-    <div style='text-align:center; font-size:1.25em; margin-bottom:18px; color:#1a3700;'>
-    Con <b>100.000 €</b> en <b>{current_year}</b> puedes comprar:
+    <div class="main-text">
+        Año: <b style="font-size:1.22em;">{current_year}</b>
+    </div>
+    <div class="main-text" style="color:#215312; font-size:1.11em; margin-top:-7px;">
+        Con <b style="color:#228B22;">100.000 €</b> en <b>{current_year}</b> puedes comprar:
     </div>
     """, unsafe_allow_html=True)
 
-    st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
-    st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{current_gold_price:,.1f} €</b></div>", unsafe_allow_html=True)
+    # --- Onzas de oro centradas y visuales ---
+    st.markdown(f"""
+    <div class="gold-metric-block">
+        <div class="gold-label">
+            <span class="gold-coin"></span>
+            Onzas de oro
+        </div>
+        <div class="gold-value">{gold_you_can_buy:.1f}</div>
+        <div class="gold-caption">Precio oro: <b>{current_gold_price:,.1f} €</b></div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # --- Gráfica dinámica (decaimiento del euro frente al oro) ---
+    # --- Gráfica visual y clara ---
     st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("#### Evolución del poder de compra del euro frente al oro")
+    st.markdown('<div style="text-align:center;font-size:1.25em;font-weight:700;margin-bottom:14px;color:#252d42;">Evolución del poder de compra del euro frente al oro</div>', unsafe_allow_html=True)
     fig, ax = plt.subplots(figsize=(8, 4))
     ozs_hist = cash / gold_prices[:idx+1]
-    ax.plot(years[:idx+1], ozs_hist, marker="o", linewidth=2)
-    ax.set_xlabel("Año")
-    ax.set_ylabel("Onzas de oro que puedes comprar con 100.000 €")
-    ax.set_title("")
-    ax.grid(True, alpha=0.3)
-    # Marca el punto actual
-    ax.scatter([current_year], [gold_you_can_buy], color='orange', s=120, label="Año actual")
+    ax.plot(years[:idx+1], ozs_hist, marker="o", linewidth=2, color="#2979FF")
+    ax.set_xlabel("Año", fontsize=13)
+    ax.set_ylabel("Onzas de oro que puedes comprar con 100.000 €", fontsize=13)
+    ax.grid(True, alpha=0.28)
+    # Punto actual: círculo grande dorado
+    ax.scatter([current_year], [gold_you_can_buy], color='#FFD700', edgecolor="#A48413", s=190, label="Año actual", zorder=10)
     ax.legend(loc="upper right")
     st.pyplot(fig, use_container_width=True)
 
@@ -124,7 +175,7 @@ if st.session_state.get('start_game'):
     if gold_you_can_buy < 50:
         st.markdown("""
         <div style='text-align:center; margin-top:18px;'>
-            <span style='color:#e63946; font-size:1.4em;'>¡Alerta! Tu dinero ya compra muy poco oro... 🪙💸</span>
+            <span style='color:#e63946; font-size:1.4em;'>¡Alerta! Tu dinero ya compra muy poco oro... <span style="color:#FFD700;">●</span></span>
         </div>
         """, unsafe_allow_html=True)
     elif gold_you_can_buy < 200:
@@ -136,7 +187,7 @@ if st.session_state.get('start_game'):
     else:
         st.markdown("""
         <div style='text-align:center; margin-top:16px;'>
-            <span style='color:#1a5f0a; font-size:1.1em;'>En este año, aún puedes comprar mucho oro. 🪙</span>
+            <span style='color:#1a5f0a; font-size:1.1em;'>En este año, aún puedes comprar mucho oro. <span style="color:#FFD700;">●</span></span>
         </div>
         """, unsafe_allow_html=True)
 
