@@ -2,10 +2,7 @@ import streamlit as st
 import numpy as np
 import time
 
-
-
-# Monopoly style title and intro
-
+# ----------- Welcome Screen -----------
 st.markdown("""
     <style>
     .monopoly-title {
@@ -40,91 +37,115 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Center the button:
 col1, col2, col3 = st.columns([3,2,3])
 with col2:
     if st.button("🎲 Empezar a jugar"):
         st.session_state['start_game'] = True
 
 if st.session_state.get('start_game'):
+
     st.markdown("""
         <h3 style='text-align:center; margin-top:12px;'>Tu partida comienza en 1999...</h3>
         <div style='text-align:center; font-size:1.18em;'>Tienes <b>100.000 €</b> en efectivo.<br>
         El balance del BCE está a punto de cambiar el destino de tu dinero...</div>
     """, unsafe_allow_html=True)
-    # ...sigue con el juego paso a paso...
-# 1. Create asset price series (simulated for the example)
-years = np.arange(1999, 2025+1)
-# Simulated house prices: start 100k, steady up
-house_prices = 100_000 + (years - 1999) * 10_000 + np.where(years > 2008, (years-2008)*5_000, 0)
-# Simulated gold prices: start 250€/oz, rises sharply from 2007
-gold_prices = 250 + (years - 1999) * 20 + np.where(years > 2007, (years-2007)*90, 0)
+    st.markdown("---")
 
-# 2. User selects a year
-selected_year = st.slider("Avanza en el tiempo:", int(years[0]), int(years[-1]), int(years[0]), key="year_slider")
+    # ----------- Game Logic -----------
+    # Simulated asset prices
+    years = np.arange(1999, 2025+1)
+    house_prices = 100_000 + (years - 1999) * 10_000 + np.where(years > 2008, (years-2008)*5_000, 0)
+    gold_prices = 250 + (years - 1999) * 20 + np.where(years > 2007, (years-2007)*90, 0)
 
-# 3. Find current prices for that year
-idx = selected_year - 1999
-current_house_price = house_prices[idx]
-current_gold_price = gold_prices[idx]
-cash = 100_000
-houses_you_can_buy = cash / current_house_price
-gold_you_can_buy = cash / current_gold_price
+    # Session state for animation
+    if 'auto_year' not in st.session_state:
+        st.session_state['auto_year'] = int(years[0])
+    if 'is_animating' not in st.session_state:
+        st.session_state['is_animating'] = False
 
-# 4. Show results visually
-st.markdown(f"""
-<div style='text-align:center; font-size:1.25em; margin-top:26px; margin-bottom:18px; color:#1a3700;'>
-Con <b>100.000 €</b> en <b>{selected_year}</b> puedes comprar:
-</div>
-""", unsafe_allow_html=True)
+    # Play (animate) button
+    col1, col2, col3 = st.columns([3,2,3])
+    with col2:
+        if st.button("▶️ Animar años"):
+            st.session_state['is_animating'] = True
 
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("🏠 % de una casa", f"{houses_you_can_buy:.2f}")
-    st.markdown(f"<div style='text-align:center; color:#222;'>Precio casa: <b>{int(current_house_price):,} €</b></div>", unsafe_allow_html=True)
-with col2:
-    st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
-    st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{int(current_gold_price):,} €</b></div>", unsafe_allow_html=True)
+    # Animation logic: advance year if animating
+    if st.session_state['is_animating']:
+        current_year = st.session_state['auto_year']
+        next_year = current_year + 1 if current_year < int(years[-1]) else int(years[-1])
+        time.sleep(0.23)
+        st.session_state['auto_year'] = next_year
+        if next_year == int(years[-1]):
+            st.session_state['is_animating'] = False
+        st.experimental_rerun()
 
-# 5. Visual feedback: Monopoly warning!
-if houses_you_can_buy < 0.5:
-    st.markdown("""
-    <div style='text-align:center; margin-top:18px;'>
-        <span style='color:#e63946; font-size:1.4em;'>¡Cuidado! Tu dinero se ha "monopolizado":<br>Ya no puedes ni comprar media casa... 🏠💸</span>
+    # The slider: value from session_state (also lets user drag)
+    selected_year = st.slider(
+        "Avanza en el tiempo:",
+        int(years[0]), int(years[-1]),
+        value=int(st.session_state['auto_year']),
+        key="auto_year"
+    )
+
+    # When user drags, stop animation
+    if selected_year != st.session_state['auto_year']:
+        st.session_state['auto_year'] = selected_year
+        st.session_state['is_animating'] = False
+
+    # Prices and calculations
+    idx = selected_year - 1999
+    current_house_price = house_prices[idx]
+    current_gold_price = gold_prices[idx]
+    cash = 100_000
+    houses_you_can_buy = cash / current_house_price
+    gold_you_can_buy = cash / current_gold_price
+
+    st.markdown(f"""
+    <div style='text-align:center; font-size:1.25em; margin-top:26px; margin-bottom:18px; color:#1a3700;'>
+    Con <b>100.000 €</b> en <b>{selected_year}</b> puedes comprar:
     </div>
     """, unsafe_allow_html=True)
-elif houses_you_can_buy < 1:
-    st.markdown("""
-    <div style='text-align:center; margin-top:16px;'>
-        <span style='color:#f4a300; font-size:1.2em;'>Con el paso del tiempo, cada vez compras menos casa con el mismo dinero. 😬</span>
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <div style='text-align:center; margin-top:16px;'>
-        <span style='color:#1a5f0a; font-size:1.1em;'>¡Felicidades! Todavía puedes comprar al menos una casa completa. 🏡</span>
-    </div>
-    """, unsafe_allow_html=True)
-years = np.arange(1999, 2025+1)
-default_idx = 0
-# Initialize the session state value for the year
-if 'auto_year' not in st.session_state:
-    st.session_state['auto_year'] = int(years[0])
 
-# Button to animate the years
-col1, col2, col3 = st.columns([3,2,3])
-with col2:
-    if st.button("▶️ Animar años"):
-        for y in years:
-            st.session_state['auto_year'] = int(y)
-            time.sleep(0.25)
-            st.experimental_rerun()
-        st.stop()  # After animation, stop further execution
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("🏠 % de una casa", f"{houses_you_can_buy:.2f}")
+        st.markdown(f"<div style='text-align:center; color:#222;'>Precio casa: <b>{int(current_house_price):,} €</b></div>", unsafe_allow_html=True)
+    with col2:
+        st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
+        st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{int(current_gold_price):,} €</b></div>", unsafe_allow_html=True)
 
-# The slider: value comes from st.session_state['auto_year']
-selected_year = st.slider(
-    "Avanza en el tiempo:",
-    int(years[0]), int(years[-1]),
-    value=int(st.session_state['auto_year']),
-    key="auto_year"
-)
+    # Visual feedback and monopoly message
+    if houses_you_can_buy < 0.5:
+        st.markdown("""
+        <div style='text-align:center; margin-top:18px;'>
+            <span style='color:#e63946; font-size:1.4em;'>¡Cuidado! Tu dinero se ha "monopolizado":<br>Ya no puedes ni comprar media casa... 🏠💸</span>
+        </div>
+        """, unsafe_allow_html=True)
+    elif houses_you_can_buy < 1:
+        st.markdown("""
+        <div style='text-align:center; margin-top:16px;'>
+            <span style='color:#f4a300; font-size:1.2em;'>Con el paso del tiempo, cada vez compras menos casa con el mismo dinero. 😬</span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style='text-align:center; margin-top:16px;'>
+            <span style='color:#1a5f0a; font-size:1.1em;'>¡Felicidades! Todavía puedes comprar al menos una casa completa. 🏡</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<hr style='margin:34px 0;'>", unsafe_allow_html=True)
+
+    # (Optional: conclusions or reset button)
+    if selected_year == int(years[-1]):
+        st.markdown("""
+        <div style='background-color:#f0f8ff; border-left: 7px solid #2b5876; padding: 18px 24px; border-radius:8px; color:#222; margin-top:20px;'>
+        <h2 style='color:#2b5876;'>🔔 Conclusiones</h2>
+        <ul style='font-size:1.08em; color:#222;'>
+          <li><b>El dinero en efectivo pierde poder adquisitivo con el tiempo.</b></li>
+          <li><b>El aumento de los balances de los bancos centrales y la inflación de activos</b> hacen que cada vez puedas comprar menos cosas reales.</li>
+          <li><b>Diversificar en activos reales</b> es clave para proteger tu riqueza a largo plazo.</li>
+        </ul>
+        <p style='margin-top:10px; font-size:1.02em; color:#384957;'><b>¿Quieres volver a intentarlo?</b> Refresca la página o mueve el slider para jugar de nuevo.</p>
+        </div>
+        """, unsafe_allow_html=True)
