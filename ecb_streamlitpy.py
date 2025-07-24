@@ -18,8 +18,9 @@ st.markdown("""
     }
     .monopoly-intro {
         text-align: center;
-        background-color: #f8ffd7;
+        background-color: #fff !important;
         border: 2px dashed #e63946;
+        color: #1a3700;
         border-radius: 15px;
         margin: 0 auto 18px auto;
         padding: 18px 30px 10px 30px;
