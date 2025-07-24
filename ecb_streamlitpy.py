@@ -1,6 +1,13 @@
 import streamlit as st
 
+# Center the button using Streamlit columns
+col1, col2, col3 = st.columns([3,2,3])
+with col2:
+    if st.button("🎲 Empezar a jugar"):
+        st.session_state['start_game'] = True
+
 # Monopoly style title and intro
+
 st.markdown("""
     <style>
     .monopoly-title {
