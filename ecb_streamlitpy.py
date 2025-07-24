@@ -71,7 +71,7 @@ if st.session_state.get('start_game'):
 
     # Animation logic: advance year if animating
     if st.session_state['is_animating']:
-    current_year = st.session_state['auto_year']
+        current_year = st.session_state['auto_year']
     if current_year < int(years[-1]):
         next_year = current_year + 1
         time.sleep(0.23)
