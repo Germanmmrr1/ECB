@@ -1,4 +1,6 @@
 import streamlit as st
+import numpy as np
+
 
 
 # Monopoly style title and intro
@@ -50,3 +52,55 @@ if st.session_state.get('start_game'):
         El balance del BCE está a punto de cambiar el destino de tu dinero...</div>
     """, unsafe_allow_html=True)
     # ...sigue con el juego paso a paso...
+# 1. Create asset price series (simulated for the example)
+years = np.arange(1999, 2025+1)
+# Simulated house prices: start 100k, steady up
+house_prices = 100_000 + (years - 1999) * 10_000 + np.where(years > 2008, (years-2008)*5_000, 0)
+# Simulated gold prices: start 250€/oz, rises sharply from 2007
+gold_prices = 250 + (years - 1999) * 20 + np.where(years > 2007, (years-2007)*90, 0)
+
+# 2. User selects a year
+selected_year = st.slider("Avanza en el tiempo:", int(years[0]), int(years[-1]), int(years[0]), key="year_slider")
+
+# 3. Find current prices for that year
+idx = selected_year - 1999
+current_house_price = house_prices[idx]
+current_gold_price = gold_prices[idx]
+cash = 100_000
+houses_you_can_buy = cash / current_house_price
+gold_you_can_buy = cash / current_gold_price
+
+# 4. Show results visually
+st.markdown(f"""
+<div style='text-align:center; font-size:1.25em; margin-top:26px; margin-bottom:18px; color:#1a3700;'>
+Con <b>100.000 €</b> en <b>{selected_year}</b> puedes comprar:
+</div>
+""", unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.metric("🏠 % de una casa", f"{houses_you_can_buy:.2f}")
+    st.markdown(f"<div style='text-align:center; color:#222;'>Precio casa: <b>{int(current_house_price):,} €</b></div>", unsafe_allow_html=True)
+with col2:
+    st.metric("🪙 Onzas de oro", f"{gold_you_can_buy:.1f}")
+    st.markdown(f"<div style='text-align:center; color:#222;'>Precio oro: <b>{int(current_gold_price):,} €</b></div>", unsafe_allow_html=True)
+
+# 5. Visual feedback: Monopoly warning!
+if houses_you_can_buy < 0.5:
+    st.markdown("""
+    <div style='text-align:center; margin-top:18px;'>
+        <span style='color:#e63946; font-size:1.4em;'>¡Cuidado! Tu dinero se ha "monopolizado":<br>Ya no puedes ni comprar media casa... 🏠💸</span>
+    </div>
+    """, unsafe_allow_html=True)
+elif houses_you_can_buy < 1:
+    st.markdown("""
+    <div style='text-align:center; margin-top:16px;'>
+        <span style='color:#f4a300; font-size:1.2em;'>Con el paso del tiempo, cada vez compras menos casa con el mismo dinero. 😬</span>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <div style='text-align:center; margin-top:16px;'>
+        <span style='color:#1a5f0a; font-size:1.1em;'>¡Felicidades! Todavía puedes comprar al menos una casa completa. 🏡</span>
+    </div>
+    """, unsafe_allow_html=True)
